@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万象实体互动桌 - 控制端</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>万象实体互动桌</h1>
+            <div class="status-bar">
+                <span id="connection-status" class="status disconnected">未连接</span>
+                <span id="position-info">X: 0, Y: 0</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- 连接区域 -->
+            <section class="panel">
+                <h2>设备连接</h2>
+                <button id="connect-btn" class="btn btn-primary">连接设备</button>
+                <button id="disconnect-btn" class="btn btn-secondary" disabled>断开</button>
+            </section>
+
+            <!-- 运动控制 -->
+            <section class="panel">
+                <h2>运动控制</h2>
+                <div class="dpad">
+                    <button class="dpad-btn" data-dir="up">↑</button>
+                    <div class="dpad-row">
+                        <button class="dpad-btn" data-dir="left">←</button>
+                        <button class="dpad-btn dpad-center" data-dir="home">回零</button>
+                        <button class="dpad-btn" data-dir="right">→</button>
+                    </div>
+                    <button class="dpad-btn" data-dir="down">↓</button>
+                </div>
+                <div class="control-row">
+                    <label>步长: 
+                        <select id="step-size">
+                            <option value="10">10步</option>
+                            <option value="50" selected>50步</option>
+                            <option value="100">100步</option>
+                            <option value="500">500步</option>
+                        </select>
+                    </label>
+                    <label>速度: 
+                        <input type="range" id="speed" min="500" max="3000" value="2000" step="100">
+                        <span id="speed-value">2000</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- 电磁铁控制 -->
+            <section class="panel">
+                <h2>电磁铁</h2>
+                <div class="button-group">
+                    <button id="mag-on" class="btn btn-mag">吸合</button>
+                    <button id="mag-off" class="btn btn-secondary">释放</button>
+                    <button id="mag-pulse" class="btn btn-secondary">脉冲(300ms)</button>
+                </div>
+            </section>
+
+            <!-- 棋盘控制 -->
+            <section class="panel">
+                <h2>棋盘移动</h2>
+                <p class="hint">输入目标格子坐标 (0-7)</p>
+                <div class="control-row">
+                    <label>行: <input type="number" id="grid-row" min="0" max="7" value="3" style="width:60px"></label>
+                    <label>列: <input type="number" id="grid-col" min="0" max="7" value="3" style="width:60px"></label>
+                    <button id="grid-go" class="btn btn-primary">移动到该格</button>
+                </div>
+            </section>
+
+            <!-- 互动片移动 -->
+            <section class="panel">
+                <h2>互动片移动</h2>
+                <p class="hint">从起点格移动互动片到终点格</p>
+                <div class="control-row">
+                    <label>起点(行,列): 
+                        <input type="number" id="from-row" min="0" max="7" value="1" style="width:50px">
+                        <input type="number" id="from-col" min="0" max="7" value="1" style="width:50px">
+                    </label>
+                    <label>终点(行,列): 
+                        <input type="number" id="to-row" min="0" max="7" value="5" style="width:50px">
+                        <input type="number" id="to-col" min="0" max="7" value="5" style="width:50px">
+                    </label>
+                </div>
+                <button id="piece-move" class="btn btn-primary" style="margin-top:10px">移动互动片</button>
+            </section>
+
+            <!-- 调试终端 -->
+            <section class="panel">
+                <h2>调试终端</h2>
+                <div id="log" class="log"></div>
+                <div class="control-row">
+                    <input type="text" id="cmd-input" placeholder="输入指令，如: STATUS?" style="flex:1">
+                    <button id="send-cmd" class="btn btn-primary">发送</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>万象实体互动桌 v1.0 | 需使用Chrome/Edge浏览器</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
