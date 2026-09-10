@@ -1,0 +1,7 @@
+# PDF page previews generated during local reference inspection.
+ca100_page_*.png
+chessnut_manual_page_*.png
+
+# Python bytecode and local test caches.
+__pycache__/
+*.py[cod]

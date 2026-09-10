@@ -9,10 +9,12 @@
 #include "electromagnet.h"
 #include "ble_service.h"
 #include "command_parser.h"
+#include "identity_grid.h"
 
 MotorControl motor;
 Electromagnet mag;
 BLEService ble;
+IdentityGrid identityGrid;
 
 unsigned long lastCommandTime = 0;
 
@@ -115,6 +117,24 @@ void handleCommand(const std::string& command) {
                  mag.isOn() ? "ON" : "OFF");
         response = buf;
     }
+    else if (type == "ID_SCAN" || type == "SNAPSHOT?") {
+        // 首版逐格读取 DS2401。通道号按棋盘布线表映射到具体格位。
+        // 空格返回 EMPTY，CRC 错误返回 CRC_ERROR，避免把坏读数当成棋子。
+        for (uint8_t channel = 0; channel < identityGrid.channelCount(); ++channel) {
+            IdentityReading reading = identityGrid.readChannel(channel);
+            if (!reading.present) {
+                response = "IDSCAN,CH," + std::to_string(channel) + ",EMPTY";
+            } else if (!reading.crc_ok) {
+                response = "IDSCAN,CH," + std::to_string(channel) + ",CRC_ERROR";
+            } else {
+                response = "IDSCAN,CH," + std::to_string(channel) + ",UID," +
+                           std::string(identityGrid.formatUid(reading.uid).c_str());
+            }
+            Serial.println(response.c_str());
+            ble.notify(response);
+        }
+        response = "OK,ID_SCAN_DONE";
+    }
     else if (type == "ENABLE") {
         motor.enable();
         response = "OK,ENABLED";
@@ -129,7 +149,7 @@ void handleCommand(const std::string& command) {
         response = "OK,STOPPED";
     }
     else if (type == "HELP") {
-        response = "COMMANDS:MOVE,MOVEMM,GOTO,GRID,PIECE,HOME,MAG,SPEED,STATUS,ENABLE,DISABLE,STOP";
+        response = "COMMANDS:ID_SCAN,SNAPSHOT?,MOVE,MOVEMM,GOTO,GRID,PIECE,HOME,MAG,SPEED,STATUS,ENABLE,DISABLE,STOP";
     }
     else {
         response = "ERR,UNKNOWN_CMD";
@@ -152,13 +172,14 @@ void setup() {
     // 初始化各模块
     motor.begin();
     mag.begin();
+    identityGrid.begin();
     ble.begin(handleCommand);
     
     // 上电自动回零（可选，注释掉可跳过）
     // motor.home();
     
     Serial.println("[System] 初始化完成，等待指令...");
-    Serial.println("[System] 输入 HELP 查看可用指令");
+    Serial.println("[System] 输入 HELP 查看可用指令；ID_SCAN 扫描身份格位");
 }
 
 void loop() {

@@ -27,6 +27,19 @@
 // ---------- 蜂鸣器（可选） ----------
 #define BUZZER_PIN  4
 
+// ---------- 无视觉身份识别（DS2401 + 74HC4067） ----------
+// 74HC4067 的 EN 为低有效。首轮接 2×2 或 4×4，未使用通道保持空。
+// N8R8 开发板可能占用部分高编号 GPIO，采购后按实际丝印复核并修改。
+#define ID_ONEWIRE_PIN  5
+#define ID_MUX_S0_PIN   6
+#define ID_MUX_S1_PIN   7
+#define ID_MUX_S2_PIN   8
+#define ID_MUX_S3_PIN   9
+#define ID_MUX_EN_PIN   10
+#define ID_GRID_CHANNELS 16
+#define ID_SCAN_RETRIES  3
+#define ID_SETTLE_MS     2
+
 // ---------- 机械参数（需标定后修改） ----------
 #define STEPS_PER_MM    80.0    // 每毫米步数（同步带+20齿同步轮约80）
 #define MAX_SPEED       2000    // 最大速度（步/秒）
