@@ -8,6 +8,8 @@
 struct IdentityReading {
     bool present;
     bool crc_ok;
+    bool supported_family;
+    uint8_t family_code;
     uint8_t uid[8];
 };
 

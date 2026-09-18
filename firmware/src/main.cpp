@@ -118,7 +118,7 @@ void handleCommand(const std::string& command) {
         response = buf;
     }
     else if (type == "ID_SCAN" || type == "SNAPSHOT?") {
-        // 首版逐格读取 DS2401。通道号按棋盘布线表映射到具体格位。
+        // 首版逐格读取 DS2431/DS2401 ROM。通道号按棋盘布线表映射到具体格位。
         // 空格返回 EMPTY，CRC 错误返回 CRC_ERROR，避免把坏读数当成棋子。
         for (uint8_t channel = 0; channel < identityGrid.channelCount(); ++channel) {
             IdentityReading reading = identityGrid.readChannel(channel);
@@ -126,6 +126,8 @@ void handleCommand(const std::string& command) {
                 response = "IDSCAN,CH," + std::to_string(channel) + ",EMPTY";
             } else if (!reading.crc_ok) {
                 response = "IDSCAN,CH," + std::to_string(channel) + ",CRC_ERROR";
+            } else if (!reading.supported_family) {
+                response = "IDSCAN,CH," + std::to_string(channel) + ",UNSUPPORTED_FAMILY";
             } else {
                 response = "IDSCAN,CH," + std::to_string(channel) + ",UID," +
                            std::string(identityGrid.formatUid(reading.uid).c_str());

@@ -33,7 +33,10 @@ IdentityReading IdentityGrid::readOnce(uint8_t channel) {
     }
 
     result.present = true;
+    result.family_code = result.uid[0];
     result.crc_ok = OneWire::crc8(result.uid, 7) == result.uid[7];
+    // 0x2D = DS2431; 0x01 = DS2401/DS2411 family used by the electrical backup.
+    result.supported_family = result.family_code == 0x2D || result.family_code == 0x01;
     digitalWrite(ID_MUX_EN_PIN, HIGH);
     return result;
 }
@@ -44,7 +47,7 @@ IdentityReading IdentityGrid::readChannel(uint8_t channel) {
 
     for (uint8_t attempt = 0; attempt < ID_SCAN_RETRIES; ++attempt) {
         last = readOnce(channel);
-        if (!last.present || last.crc_ok) return last;
+        if (!last.present || (last.crc_ok && last.supported_family)) return last;
     }
     return last;
 }

@@ -26,7 +26,7 @@ IDSCAN,STATE,12,CH,1,EMPTY
 IDSCAN,STATE,12,CH,2,CRC_ERROR
 ```
 
-`CH` 是硬件通道，Android 根据棋盘布线表映射成 `a1` 到 `h8`。`UID` 来自 DS2401 的 64-bit ROM；`EMPTY` 表示该格没有建立可靠接触，`CRC_ERROR` 不得用于推进棋局。
+`CH` 是硬件通道，Android 根据棋盘布线表映射成 `a1` 到 `h8`。`UID` 来自 DS2431 或 DS2401 的 64-bit ROM；`EMPTY` 表示该格没有建立可靠接触，`CRC_ERROR` 不得用于推进棋局。
 
 ## 约束
 
