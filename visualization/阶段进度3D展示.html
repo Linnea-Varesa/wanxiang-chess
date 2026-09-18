@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>万象实体互动桌｜阶段进度 3D 展示</title>
+  <style>
+    :root { --bg:#0e1721; --panel:#162331; --line:#2d4658; --text:#e9f1f5; --muted:#94a8b5; --accent:#53d2b3; --warn:#f2b86b; --blue:#6fb4ee; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text); background:radial-gradient(circle at 50% 0%, #203a49 0, var(--bg) 50%); font:14px/1.5 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+    .app { max-width:1320px; margin:auto; padding:24px; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:end; margin-bottom:20px; }
+    h1 { margin:0 0 6px; font-size:clamp(24px,4vw,42px); letter-spacing:.02em; }
+    .sub { color:var(--muted); max-width:780px; }
+    .tag { border:1px solid #365768; color:var(--accent); padding:7px 10px; border-radius:999px; white-space:nowrap; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.45fr) minmax(280px,.75fr); gap:18px; }
+    .scene, .panel { background:rgba(22,35,49,.9); border:1px solid var(--line); border-radius:14px; box-shadow:0 16px 45px #0004; }
+    .scene { min-height:650px; overflow:hidden; position:relative; }
+    .scene-top { display:flex; justify-content:space-between; align-items:center; padding:15px 18px; border-bottom:1px solid var(--line); }
+    .scene-top strong { font-size:17px; }
+    .scene-top span { color:var(--muted); }
+    .world { position:absolute; inset:68px 0 0; perspective:1050px; overflow:hidden; }
+    .floor { position:absolute; width:820px; height:560px; left:50%; top:52%; transform:translate(-50%,-50%) rotateX(62deg) rotateZ(-8deg); transform-style:preserve-3d; background:linear-gradient(90deg,#152f3b,#183b43); border:2px solid #3a6972; box-shadow:0 30px 0 #09141b, 0 45px 45px #0009; }
+    .floor::before { content:""; position:absolute; inset:-18px; border:1px solid #42727a; transform:translateZ(-20px); }
+    .board { position:absolute; width:520px; height:520px; left:50%; top:45%; transform:translate(-50%,-50%) translateZ(34px); display:grid; grid-template-columns:repeat(8,1fr); border:10px solid #2f2020; box-shadow:0 10px 0 #1b1212; }
+    .sq { background:#b88a5c; border:1px solid #9b6e49; position:relative; }
+    .sq:nth-child(16n+1), .sq:nth-child(16n+3), .sq:nth-child(16n+5), .sq:nth-child(16n+7), .sq:nth-child(16n+10), .sq:nth-child(16n+12), .sq:nth-child(16n+14), .sq:nth-child(16n+16) { background:#ebd5a5; border-color:#d2b67f; }
+    .piece { position:absolute; width:42px; height:58px; transform:translate(-50%,-72%) translateZ(54px); transform-style:preserve-3d; transition:transform .7s ease, opacity .5s; filter:drop-shadow(4px 7px 2px #0007); }
+    .piece .body { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:30px; height:42px; border-radius:45% 45% 28% 28%; background:linear-gradient(90deg,#f5f2e6,#c7c5bd 55%,#8e8f8c); border:2px solid #686c69; }
+    .piece .head { position:absolute; left:50%; top:1px; transform:translateX(-50%); width:22px; height:22px; border-radius:50%; background:#f7f5ec; border:2px solid #6d716e; }
+    .piece.black .body { background:linear-gradient(90deg,#4b5660,#101820 60%,#050a0e); border-color:#0a1115; }
+    .piece.black .head { background:#24323c; border-color:#080d11; }
+    .piece .base { position:absolute; left:50%; bottom:-5px; transform:translateX(-50%); width:42px; height:9px; border-radius:50%; background:#12232a; border:2px solid #58d3b3; }
+    .piece .badge { position:absolute; bottom:1px; left:50%; transform:translateX(-50%); width:12px; height:4px; border-radius:4px; background:#f2b86b; opacity:0; }
+    .stage-1 .badge, .stage-2 .badge, .stage-3 .badge, .stage-4 .badge, .stage-5 .badge { opacity:1; }
+    .reader { position:absolute; width:70px; height:70px; border:4px solid var(--accent); border-radius:14px; background:#153a3d; transform:translate(-50%,-50%) translateZ(3px); box-shadow:0 0 20px #53d2b344; opacity:0; transition:all .6s; }
+    .reader::after { content:"NFC / 位置读头"; position:absolute; top:76px; left:50%; transform:translateX(-50%); width:110px; color:var(--accent); font-size:11px; text-align:center; }
+    .stage-2 .reader, .stage-3 .reader, .stage-4 .reader, .stage-5 .reader { opacity:1; }
+    .rail { position:absolute; width:600px; height:11px; background:#667c89; border:2px solid #b2cad2; transform:translate(-50%,-50%) translateZ(-2px); opacity:0; transition:opacity .5s; }
+    .rail.x { left:50%; top:67%; }
+    .rail.y { width:440px; height:11px; left:50%; top:45%; transform:translate(-50%,-50%) rotate(90deg) translateZ(-2px); }
+    .stage-4 .rail, .stage-5 .rail { opacity:0; }
+    .screen { position:absolute; left:78%; top:23%; width:160px; height:105px; border:8px solid #0b1218; border-radius:8px; background:#163b4a; transform:translateZ(100px) rotateY(-18deg) rotateX(5deg); box-shadow:0 12px 0 #081116, 0 18px 25px #0008; opacity:0; transition:opacity .5s; padding:10px; color:#8cf0d0; font:12px/1.4 ui-monospace,monospace; }
+    .stage-4 .screen, .stage-5 .screen { opacity:1; }
+    .screen b { color:white; font-size:14px; }
+    .controller { position:absolute; left:19%; top:20%; width:140px; height:68px; transform:translateZ(83px) rotateY(18deg); background:#1e313d; border:2px solid #5b7784; border-radius:10px; box-shadow:0 13px 0 #0a151c, 0 20px 25px #0008; opacity:0; transition:opacity .5s; padding:12px; }
+    .controller::after { content:"ESP32-S3 主控"; color:#a5c9db; font-size:12px; }
+    .stage-2 .controller, .stage-3 .controller, .stage-4 .controller, .stage-5 .controller { opacity:1; }
+    .label { position:absolute; color:#d9e9ee; background:#12242cdd; border:1px solid #476572; border-radius:6px; padding:5px 8px; font-size:12px; opacity:0; transform:translateZ(125px); transition:opacity .5s; }
+    .label.id { left:9%; top:61%; }
+    .label.move { right:8%; top:66%; }
+    .label.screen-label { right:5%; top:8%; }
+    .stage-1 .label.id, .stage-2 .label.id, .stage-3 .label.id, .stage-4 .label.id, .stage-5 .label.id { opacity:1; }
+    .stage-2 .label.move, .stage-3 .label.move, .stage-4 .label.move, .stage-5 .label.move, .stage-4 .label.screen-label, .stage-5 .label.screen-label { opacity:1; }
+    .side { display:flex; flex-direction:column; gap:14px; }
+    .panel { padding:16px; }
+    .panel h2 { margin:0 0 10px; font-size:17px; }
+    .stage-list { display:grid; gap:8px; }
+    button { color:var(--text); background:#1b303c; border:1px solid #416070; border-radius:9px; padding:10px 12px; text-align:left; cursor:pointer; font:inherit; }
+    button:hover, button.active { border-color:var(--accent); background:#1e454a; }
+    .controls { display:flex; gap:8px; margin-top:12px; }
+    .controls button { flex:1; text-align:center; }
+    .metric { display:grid; grid-template-columns:1fr auto; gap:8px; border-bottom:1px solid #29414e; padding:8px 0; }
+    .metric span { color:var(--muted); }
+    .metric strong { color:var(--accent); font-weight:600; }
+    .note { color:var(--muted); font-size:12px; }
+    @media (max-width:900px) { .layout { grid-template-columns:1fr; } .scene { min-height:560px; } .floor { transform:translate(-50%,-50%) rotateX(62deg) rotateZ(-8deg) scale(.78); } }
+    @media (max-width:540px) { .app { padding:14px; } header { display:block; } .tag { display:inline-block; margin-top:10px; } .world { transform:scale(.72); transform-origin:top left; width:139%; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>万象实体互动桌</h1>
+        <div class="sub">阶段目标 3D 预览：从可更换身份盘，到平滑棋盘下的静态识别、ESP32 状态屏和对局闭环。页面展示的是工程目标，不代表硬件已验证。</div>
+      </div>
+      <div class="tag">时间 tag：2026-09-18</div>
+    </header>
+    <section class="layout">
+      <div class="scene">
+        <div class="scene-top"><strong id="sceneTitle">阶段 1｜棋子尺寸与身份盘</strong><span id="sceneStatus">打印少量样品</span></div>
+        <div class="world" id="world">
+          <div class="floor"></div>
+          <div class="board" id="board"></div>
+          <div class="rail x"></div><div class="rail y"></div>
+          <div class="reader" id="reader"></div>
+          <div class="controller"></div>
+          <div class="screen"><b>WX CHESS</b><br>回合：白方<br>建议：N g1-f3<br>状态：READY</div>
+          <div class="label id">身份盘：NTAG213 / 磁编码候选</div>
+          <div class="label move">读头/位置层（自动移子后置）</div>
+          <div class="label screen-label">ESP32 提供屏幕内容</div>
+        </div>
+      </div>
+      <aside class="side">
+        <div class="panel">
+          <h2>阶段切换</h2>
+          <div class="stage-list" id="stageList"></div>
+          <div class="controls"><button id="prev">上一阶段</button><button id="play">自动播放</button><button id="next">下一阶段</button></div>
+        </div>
+        <div class="panel">
+          <h2 id="detailTitle">阶段目标</h2>
+          <div id="detail"></div>
+        </div>
+        <div class="panel">
+          <h2>当前边界</h2>
+          <div class="metric"><span>棋子尺寸</span><strong>可修改参数</strong></div>
+          <div class="metric"><span>识别结果</span><strong>UID + 格位</strong></div>
+          <div class="metric"><span>本年自动移子</span><strong>后置研究</strong></div>
+          <div class="metric"><span>前端</span><strong>协议先行</strong></div>
+          <p class="note">先通过小样品证明读距、串读和格位归属，再冻结棋子和棋盘尺寸；磁力运动接口留到后续研究。</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <script>
+    const stages = [
+      { title:'阶段 1｜棋子尺寸与身份盘', status:'打印少量样品', detail:'兵、马、车各打印少量。底部做可拆身份盘，比较空白盘、NTAG213 标签盘和磁编码盘。棋子外形和尺寸可以修改，3MF 只是初始参考。' },
+      { title:'阶段 2｜2×2 无触点识别', status:'证明 UID 能读且不串格', detail:'用平滑约 3 mm 非金属板测试标签 UID、读距和相邻格隔离。注意：标签 UID 只说明“是谁”，读头坐标或传感器阵列才说明“在哪一格”。' },
+      { title:'阶段 3｜静态定位扩展', status:'争取 4×4，记录串读与扫描周期', detail:'在玩家手动放置的条件下扩展样片，验证 UID 与格位联合结果。记录读距、偏心、相邻棋子、串读率和扫描周期；自动移子只记录后续接口，不在今年搭建。' },
+      { title:'阶段 4｜ESP32 与棋盘屏幕', status:'主控提供状态显示', detail:'ESP32-S3 通过 SPI 驱动 ILI9341，显示回合、建议走法、连接、扫描和故障状态。屏幕不是独立 AI 主机，内容由主控生成。' },
+      { title:'阶段 5｜协议与对局闭环', status:'可向老师演示', detail:'前端通过 BLE/串口读取 UID + 格位快照，规则和 AI 返回走法，屏幕/语音提示，玩家手动放置后再确认。自动移子、8×8 最终阵列和微信小程序留到后续评估。' }
+    ];
+    const board = document.getElementById('board');
+    for (let i=0;i<64;i++) { const sq=document.createElement('div'); sq.className='sq'; board.appendChild(sq); }
+    const pieces = [
+      ['white',1,6,'兵'], ['black',6,1,'兵'], ['white',2,7,'车'], ['black',5,0,'马'], ['white',4,4,'马'], ['black',3,2,'车']
+    ];
+    pieces.forEach(([color,x,y,name]) => { const p=document.createElement('div'); p.className=`piece ${color}`; p.style.left=`${(x+.5)*12.5}%`; p.style.top=`${(y+.5)*12.5}%`; p.innerHTML=`<div class="head"></div><div class="body"></div><div class="base"></div><div class="badge"></div>`; p.title=name; board.appendChild(p); });
+    const reader=document.getElementById('reader'); reader.style.left='50%'; reader.style.top='45%';
+    const list=document.getElementById('stageList'); const world=document.getElementById('world'); let current=0; let timer=null;
+    stages.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=s.title; b.addEventListener('click',()=>setStage(i)); list.appendChild(b); });
+    function setStage(i){ current=(i+stages.length)%stages.length; world.className=`world stage-${current+1}`; document.getElementById('sceneTitle').textContent=stages[current].title; document.getElementById('sceneStatus').textContent=stages[current].status; document.getElementById('detailTitle').textContent=stages[current].title; document.getElementById('detail').textContent=stages[current].detail; [...list.children].forEach((b,n)=>b.classList.toggle('active',n===current)); }
+    document.getElementById('prev').onclick=()=>setStage(current-1); document.getElementById('next').onclick=()=>setStage(current+1);
+    document.getElementById('play').onclick=()=>{ if(timer){clearInterval(timer);timer=null;document.getElementById('play').textContent='自动播放';} else {document.getElementById('play').textContent='暂停播放';timer=setInterval(()=>setStage(current+1),3500);} };
+    setStage(0);
+  </script>
+</body>
+</html>
