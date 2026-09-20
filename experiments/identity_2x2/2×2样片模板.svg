@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">
+  <title>2×2 无触点识别样片网格模板</title>
+  <desc>100 mm 方形模板，四格边长 25.5 mm，适用于 3 mm 亚克力板上方贴纸打印。</desc>
+  <rect x="0" y="0" width="100" height="100" fill="white" stroke="black" stroke-width="0.3"/>
+  <g fill="none" stroke="black" stroke-width="0.25">
+    <rect x="24.5" y="24.5" width="51" height="51"/>
+    <path d="M50 24.5V75.5M24.5 50H75.5"/>
+  </g>
+  <g font-family="Arial,Microsoft YaHei,sans-serif" font-size="3.5" fill="black" text-anchor="middle">
+    <text x="37.25" y="38">A1</text>
+    <text x="62.75" y="38">A2</text>
+    <text x="37.25" y="63.5">B1</text>
+    <text x="62.75" y="63.5">B2</text>
+    <text x="50" y="12">100 mm 外框；四格边长 25.5 mm</text>
+  </g>
+</svg>
