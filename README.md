@@ -19,7 +19,7 @@
 
 [`references/original_handoff/`](references/original_handoff/) 和 [`references/original_archive/`](references/original_archive/) 是历史交接资料和原始压缩包的只读参考副本。原工程第一版以五子棋、摄像头 ArUco 和单 XY 演示为主；新工程以本 README 和 [`docs/`](docs/) 中的决策为准。
 
-完整目录用途和文件路径索引见 [`docs/18_目录与文件索引.md`](docs/18_目录与文件索引.md)。文档之间的引用使用相对于引用文件的路径；历史参考副本保留原路径，不作为当前工程接口。
+完整目录用途和文件路径索引见 [`docs/18_目录与文件索引.md`](docs/18_目录与文件索引.md)。当前硬件决策以 [`docs/25_工程重整与一次性采购决策_2026-09-22.md`](docs/25_工程重整与一次性采购决策_2026-09-22.md) 为准。文档之间的引用使用相对于引用文件的路径；历史参考副本保留原路径，不作为当前工程接口。
 
 面向指导老师的当前阶段汇报、采购、分工和周计划集中在 [`teacher_report/`](teacher_report/)，首份总览为 [`teacher_report/00_阶段汇报_2026-09-18.md`](teacher_report/00_阶段汇报_2026-09-18.md)。
 
